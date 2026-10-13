@@ -31,6 +31,26 @@ class MagicShopClient:
     def __exit__(self, *_args) -> None:
         self.close()
 
+    def _get(self, url: str, **kwargs) -> httpx.Response:
+        attempts = max(1, int(self.source.get("request_retry_attempts", 3)))
+        last_error: httpx.HTTPError | None = None
+        for attempt in range(attempts):
+            try:
+                response = self.client.get(url, **kwargs)
+                response.raise_for_status()
+                return response
+            except httpx.HTTPStatusError as exc:
+                last_error = exc
+                if exc.response.status_code not in {408, 425, 429, 500, 502, 503, 504}:
+                    raise
+            except httpx.HTTPError as exc:
+                last_error = exc
+            if attempt + 1 < attempts:
+                time.sleep(0.75 * (2**attempt))
+        if last_error is not None:
+            raise last_error
+        raise RuntimeError("Запрос каталога завершился без ответа")
+
     def fetch_products(self, limit: int | None = None) -> list[Product]:
         page_size = int(self.source["page_size"])
         products: list[Product] = []
@@ -41,7 +61,7 @@ class MagicShopClient:
             take = page_size if limit is None else min(page_size, max(limit - len(products), 0))
             if take <= 0:
                 break
-            response = self.client.get(
+            response = self._get(
                 self.source["api_url"],
                 params={
                     "slug": self.source["category_slug"],
@@ -50,7 +70,6 @@ class MagicShopClient:
                     "take": take,
                 },
             )
-            response.raise_for_status()
             payload = response.json()
             batch = [Product.from_api(item) for item in payload.get("products", [])]
             total = int(payload.get("total", len(batch)))

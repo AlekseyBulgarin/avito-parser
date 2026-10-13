@@ -59,4 +59,6 @@ class Listing:
     description: str
     selling_price: int
     image_urls: list[str]
+    apparel: str
     apparel_type: str
+    unavailable_image_urls: list[str] = field(default_factory=list)

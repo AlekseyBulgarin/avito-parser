@@ -16,6 +16,7 @@ DEFAULTS: dict[str, Any] = {
         "page_size": 100,
         "timeout_seconds": 30,
         "request_delay_seconds": 0.35,
+        "request_retry_attempts": 3,
     },
     "pricing": {
         "bands": [
@@ -39,8 +40,9 @@ DEFAULTS: dict[str, Any] = {
         "ai_enabled": False,
         "model": "gpt-6-astra",
         "suffix": (
-            "В наличии. Перед заказом уточните актуальный размер.\n"
-            "Отправка по России. Дополнительные фото и замеры — по запросу."
+            "Перед заказом напишите — подтвердим наличие нужного размера и при необходимости "
+            "пришлём дополнительные замеры.\n"
+            "Возможна отправка по России и самовывоз по предварительной договорённости."
         ),
     },
     "export": {
@@ -50,6 +52,9 @@ DEFAULTS: dict[str, Any] = {
         "download_images": False,
         "max_images": 10,
         "image_separator": "|",
+        "verify_images": False,
+        "image_concurrency": 8,
+        "image_retry_attempts": 3,
     },
 }
 

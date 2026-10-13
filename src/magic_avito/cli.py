@@ -20,7 +20,22 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--ai", action="store_true", help="Генерировать описания через OpenAI API")
     parser.add_argument("--download-images", action="store_true", help="Скачать фото локально")
+    parser.add_argument(
+        "--verify-images",
+        action="store_true",
+        help="Проверить доступность всех ссылок на фото",
+    )
     parser.add_argument("--template", default=None, help="Путь к официальному XLSX-шаблону Avito")
+    parser.add_argument(
+        "--cached-products",
+        default=None,
+        help="Собрать выгрузку из ранее сохранённого output/products.json",
+    )
+    parser.add_argument(
+        "--cached-image-audit",
+        default=None,
+        help="Повторно использовать завершённый image_audit.json при недоступности фотохоста",
+    )
     parser.add_argument(
         "--init-config", action="store_true", help="Создать config.yaml из config.example.yaml"
     )
@@ -43,11 +58,14 @@ def main() -> int:
         limit=args.limit,
         force_ai=True if args.ai else None,
         force_download_images=True if args.download_images else None,
+        force_verify_images=True if args.verify_images else None,
         template_path=args.template,
+        cached_products_path=args.cached_products,
+        cached_image_audit_path=args.cached_image_audit,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))
     if not result["validation"]["valid"]:
-        print("Выгрузка создана, но обязательные данные продавца ещё не заполнены.")
+        print("Выгрузка создана, но проверка обнаружила ошибки; см. validation_report.json.")
         return 2
     return 0
 

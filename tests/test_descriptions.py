@@ -21,6 +21,7 @@ def test_supplier_marketing_is_removed():
     cleaned = clean_source_description(product().description)
     assert "Magic" not in cleaned
     assert "Материал Чистый хлопок" in cleaned
+    assert "Размеры L" not in cleaned
 
 
 def test_title_and_description_limits():
@@ -28,4 +29,6 @@ def test_title_and_description_limits():
     assert len(make_title(item, "L")) <= 100
     text = template_description(item, "несколько размеров", "Доставка по России.")
     assert "L, XL" in text
+    assert "Характеристики и замеры:" in text
+    assert "• Материал Чистый хлопок" in text
     assert "Артикул: 02867" in text

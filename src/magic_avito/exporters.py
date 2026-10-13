@@ -54,7 +54,7 @@ def listing_row(listing: Listing, seller: dict, separator: str) -> dict[str, obj
         "GoodsType": "Мужская одежда",
         "AdType": seller["ad_type"],
         "Condition": seller["condition"],
-        "Apparel": "Мужская одежда",
+        "Apparel": listing.apparel,
         "ApparelType": listing.apparel_type,
         "Brand": listing.product.brand,
         "Size": listing.size,
@@ -192,7 +192,13 @@ def export_products(products: list[Product], output_dir: Path) -> None:
             )
 
 
-def write_validation_report(listings: list[Listing], seller: dict, path: Path) -> dict:
+def write_validation_report(
+    listings: list[Listing],
+    seller: dict,
+    path: Path,
+    max_images: int = 10,
+    image_audit: dict | None = None,
+) -> dict:
     errors: list[str] = []
     warnings: list[str] = []
     if not seller.get("address"):
@@ -205,17 +211,53 @@ def write_validation_report(listings: list[Listing], seller: dict, path: Path) -
     for listing in listings:
         if not listing.image_urls:
             errors.append(f"{listing.listing_id}: нет фото")
+        expected_images = min(len(listing.product.photos), max_images) - len(
+            listing.unavailable_image_urls
+        )
+        if len(listing.image_urls) != expected_images:
+            errors.append(
+                f"{listing.listing_id}: выгружено {len(listing.image_urls)} фото из {expected_images}"
+            )
+        if len(listing.image_urls) > 10:
+            errors.append(f"{listing.listing_id}: больше 10 фото")
+        if len(listing.image_urls) != len(set(listing.image_urls)):
+            errors.append(f"{listing.listing_id}: повторяющиеся ссылки на фото")
+        for url in listing.image_urls:
+            if not url.startswith("https://"):
+                errors.append(f"{listing.listing_id}: фото не использует HTTPS: {url}")
         if len(listing.title) > 100:
             errors.append(f"{listing.listing_id}: заголовок длиннее 100 символов")
         if len(listing.description) > 7500:
             errors.append(f"{listing.listing_id}: описание длиннее 7500 символов")
         if not listing.size:
             warnings.append(f"{listing.listing_id}: размер не заполнен")
+    if image_audit and image_audit.get("invalid_urls"):
+        exported_urls = {url for listing in listings for url in listing.image_urls}
+        leaked_urls = [
+            item for item in image_audit.get("failures", []) if item["url"] in exported_urls
+        ]
+        if leaked_urls:
+            errors.append(f"В выгрузку попало {len(leaked_urls)} недоступных фото")
+        else:
+            warnings.append(
+                f"Исключено недоступных фото: {image_audit['invalid_urls']}"
+            )
+        excluded_ids = image_audit.get("excluded_listing_ids", [])
+        if excluded_ids:
+            warnings.append(
+                "Исключены объявления без рабочих фото: " + ", ".join(excluded_ids)
+            )
     report = {
         "valid": not errors,
         "listings": len(listings),
         "errors": sorted(set(errors)),
         "warnings": sorted(set(warnings)),
+        "images": {
+            "total": sum(len(listing.image_urls) for listing in listings),
+            "min_per_listing": min((len(listing.image_urls) for listing in listings), default=0),
+            "max_per_listing": max((len(listing.image_urls) for listing in listings), default=0),
+            "remote_check": image_audit,
+        },
     }
     path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     return report

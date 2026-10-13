@@ -6,6 +6,7 @@ source:
   page_size: 100
   timeout_seconds: 30
   request_delay_seconds: 0.35
+  request_retry_attempts: 3
 
 pricing:
   # Первое подходящее правило применяется по закупочной цене.
@@ -35,8 +36,8 @@ description:
   ai_enabled: false
   model: "gpt-6-astra"
   suffix: |-
-    В наличии. Перед заказом уточните актуальный размер.
-    Отправка по России. Дополнительные фото и замеры — по запросу.
+    Перед заказом напишите — подтвердим наличие нужного размера и при необходимости пришлём дополнительные замеры.
+    Возможна отправка по России и самовывоз по предварительной договорённости.
 
 export:
   output_dir: "output"
@@ -45,4 +46,6 @@ export:
   download_images: false
   max_images: 10
   image_separator: "|"
-
+  verify_images: false
+  image_concurrency: 8
+  image_retry_attempts: 3

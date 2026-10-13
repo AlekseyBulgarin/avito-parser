@@ -23,6 +23,8 @@ def clean_source_description(text: str) -> str:
         if any(re.search(pattern, line, flags=re.IGNORECASE) for pattern in NOISE_PATTERNS):
             continue
         line = re.sub(r"^[\s•▫️⚜🆕ℹ️]+", "", line).strip()
+        if re.match(r"^Размер(?:ы)?(?: в наличии)?[:\s]", line, flags=re.IGNORECASE):
+            continue
         if line:
             lines.append(line)
     return "\n".join(lines)
@@ -38,12 +40,17 @@ def make_title(product: Product, size: str) -> str:
 def template_description(product: Product, size: str, suffix: str) -> str:
     sizes = size if size != "несколько размеров" else ", ".join(product.sizes)
     details = clean_source_description(product.description)
+    detail_block = ""
+    if details:
+        detail_block = "Характеристики и замеры:\n" + "\n".join(
+            f"• {line}" for line in details.splitlines()
+        )
     blocks = [
         product.name,
         f"Бренд: {product.brand}." if product.brand else "",
         f"Размеры в наличии: {sizes}." if sizes else "",
         "Состояние: новое.",
-        details,
+        detail_block,
         suffix.strip(),
         f"Артикул: {product.sku}.",
     ]
