@@ -1,0 +1,20 @@
+name: Update Avito feed
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync
+      - run: uv run magic-avito --config config.yaml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: avito-export
+          path: output/
+

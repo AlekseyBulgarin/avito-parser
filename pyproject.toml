@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "magic-avito"
+version = "0.1.0"
+description = "Magic Shop catalog parser and Avito autoload exporter"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "httpx>=0.28,<1",
+  "openpyxl>=3.1,<4",
+  "PyYAML>=6.0,<7",
+]
+
+[project.optional-dependencies]
+ai = ["openai>=2.0,<4"]
+dev = ["pytest>=8.3,<10", "ruff>=0.11,<1"]
+
+[project.scripts]
+magic-avito = "magic_avito.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/magic_avito"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+

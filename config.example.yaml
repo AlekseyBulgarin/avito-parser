@@ -1,0 +1,48 @@
+source:
+  api_url: "https://magic-shopp.com/api/products"
+  site_url: "https://magic-shopp.com"
+  category_slug: "odezhda"
+  gender: "male"
+  page_size: 100
+  timeout_seconds: 30
+  request_delay_seconds: 0.35
+
+pricing:
+  # Первое подходящее правило применяется по закупочной цене.
+  bands:
+    - max_price: 5000
+      markup: 0.60
+    - max_price: 10000
+      markup: 0.45
+    - max_price: 20000
+      markup: 0.35
+    - max_price: 40000
+      markup: 0.30
+    - max_price: null
+      markup: 0.25
+  rounding_ending: 990
+
+seller:
+  # Заполните перед загрузкой в Avito.
+  address: ""
+  contact_phone: ""
+  contact_method: "В сообщениях"
+  manager_name: ""
+  ad_type: "Товар приобретен на продажу"
+  condition: "Новое"
+
+description:
+  ai_enabled: false
+  model: "gpt-6-astra"
+  suffix: |-
+    В наличии. Перед заказом уточните актуальный размер.
+    Отправка по России. Дополнительные фото и замеры — по запросу.
+
+export:
+  output_dir: "output"
+  template_path: null
+  split_by_size: false
+  download_images: false
+  max_images: 10
+  image_separator: "|"
+
