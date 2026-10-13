@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 .env
+config.yaml
 .pytest_cache/
 .ruff_cache/
 .artifact-runtime/
@@ -9,4 +10,3 @@ data/*.db
 output/
 templates/*.xlsx
 !templates/.gitkeep
-
